@@ -12,3 +12,10 @@ export interface FailedRequest {
   message?: string;
   errors?: string[];
 }
+
+export interface ValueWithRequiredState<T> {
+  value: T;
+  required: boolean;
+  isValid: boolean;
+  type: string;
+}

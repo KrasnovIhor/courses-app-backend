@@ -154,7 +154,7 @@ class JsonReader {
           reader.close();
           subscriber.next({
             successful: true,
-            result: chunks ? parsedJsonObject : 'Course is not found.',
+            result: chunks ? parsedJsonObject : null,
           });
           subscriber.complete();
         });

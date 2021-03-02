@@ -1,8 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import * as path from 'path';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 import {
   FailedRequest,
@@ -10,10 +10,11 @@ import {
   SuccessfulRequest,
 } from '@models/common.models';
 
+import { ModelValidation } from '@helpers/decorators';
 import { jsonReader } from '@helpers/file-reader.helper';
 import { jsonWriter } from '@helpers/file-writer.helper';
 
-import { Course, CourseModel, ValueWithRequiredState } from './courses.models';
+import { Course, CourseModel } from './courses.models';
 
 @Injectable()
 export class CoursesService {
@@ -74,67 +75,48 @@ export class CoursesService {
       );
   }
 
+  @ModelValidation<CourseModel, Course>(Course)
   addCourse(
-    data: CourseModel,
+    course: CourseModel,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
-    const course = new Course(data);
-    const errors = course.errorStates;
+    return jsonWriter.addObject<CourseModel>(this.filePath, course).pipe(
+      map((result: SuccessfulRequest<string>) => ({
+        ...result,
+        result: 'Course was added.',
+      })),
+      catchError((err: FailedRequest) => {
+        if (err.message === 'Error during file reading.') {
+          return jsonWriter.createJSON<CourseModel>(this.filePath, course).pipe(
+            map((result: SuccessfulRequest<string>) => ({
+              ...result,
+              result: 'Course was added.',
+            })),
+            catchError((err: FailedRequest) => of(err)),
+          );
+        }
 
-    if (errors.length) {
-      throw new HttpException(
-        { successful: false, errors },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return jsonWriter
-      .addObject<CourseModel>(this.filePath, this.getValuesFromCourse(course))
-      .pipe(
-        catchError((err: FailedRequest) => {
-          if (err.message === 'Error during file reading.') {
-            return jsonWriter.createJSON<CourseModel>(
-              this.filePath,
-              this.getValuesFromCourse(course),
-            );
-          }
-
-          return of(err);
-        }),
-      );
+        return of(err);
+      }),
+    );
   }
 
+  @ModelValidation<CourseModel, Course>(Course)
   editCourse(
     id: string,
-    newData: CourseModel,
+    course: CourseModel,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
-    const updatedCourse = new Course(newData);
-    const errors = updatedCourse.errorStates;
+    return jsonWriter.editObject<CourseModel>(this.filePath, course, id).pipe(
+      catchError((err: FailedRequest) => {
+        if (err.message === 'Error during renaming.') {
+          return of({
+            successful: true,
+            result: `Course with id - ${id} was not found.`,
+          } as SuccessfulRequest<string>);
+        }
 
-    if (errors.length) {
-      throw new HttpException(
-        { successful: false, errors },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return jsonWriter
-      .editObject<CourseModel>(
-        this.filePath,
-        this.getValuesFromCourse(updatedCourse),
-        id,
-      )
-      .pipe(
-        catchError((err: FailedRequest) => {
-          if (err.message === 'Error during renaming.') {
-            return of({
-              successful: true,
-              result: `Course with id - ${id} was not found.`,
-            } as SuccessfulRequest<string>);
-          }
-
-          return of(err);
-        }),
-      );
+        return of(err);
+      }),
+    );
   }
 
   deleteCourse(
@@ -151,21 +133,6 @@ export class CoursesService {
 
         return of(err);
       }),
-    );
-  }
-
-  private getValuesFromCourse(course: Course): CourseModel {
-    return Object.entries(course).reduce(
-      (
-        acc: CourseModel,
-        [key, { value }]: [string, ValueWithRequiredState<any>],
-      ) => {
-        return {
-          ...acc,
-          [key]: value,
-        };
-      },
-      {} as CourseModel,
     );
   }
 }
