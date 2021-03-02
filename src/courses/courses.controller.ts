@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { Observable } from 'rxjs';
@@ -17,10 +18,15 @@ import {
   SuccessfulRequest,
 } from '@models/common.models';
 
+import { Authorized } from '@helpers/decorators';
+
+import { AuthorizationGuard } from '@core/authorization.guard';
+
 import { CourseModel } from './courses.models';
 import { CoursesService } from './courses.service';
 
 @Controller('courses')
+@UseGuards(AuthorizationGuard)
 export class CoursesController {
   constructor(private coursesService: CoursesService) {}
 
@@ -39,6 +45,7 @@ export class CoursesController {
   }
 
   @Post('add')
+  @Authorized()
   addCourse(
     @Body() body: CourseModel,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
@@ -53,6 +60,7 @@ export class CoursesController {
   }
 
   @Put(':id')
+  @Authorized()
   editCourse(
     @Param('id') id: string,
     @Body() body: CourseModel,
@@ -61,6 +69,7 @@ export class CoursesController {
   }
 
   @Delete(':id')
+  @Authorized()
   deleteCourse(
     @Param('id') id: string,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {

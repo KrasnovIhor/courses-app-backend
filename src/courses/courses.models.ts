@@ -1,4 +1,7 @@
+import { ValueWithRequiredState } from '@models/common.models';
+
 import {
+  getValidityStateOfModel,
   isArrayContainsOnlyString,
   isNumber,
   isString,
@@ -51,19 +54,7 @@ export class Course implements CourseModelWithRequiredState {
   }
 
   get errorStates(): string[] {
-    return Object.keys(this).reduce((acc: string[], key: string) => {
-      const classProperty = this[key] as ValueWithRequiredState<any>;
-
-      if (classProperty.required && !classProperty.value) {
-        return [...acc, `'${key}' was missed.`];
-      }
-
-      if (!classProperty.isValid) {
-        return [...acc, `'${key}' should be a ${classProperty.type}`];
-      }
-
-      return acc;
-    }, [] as string[]);
+    return getValidityStateOfModel(this);
   }
 }
 
@@ -73,13 +64,6 @@ interface CourseModelWithRequiredState {
   creationDate: ValueWithRequiredState<string>;
   duration: ValueWithRequiredState<number>;
   authors: ValueWithRequiredState<string[]>;
-}
-
-export interface ValueWithRequiredState<T> {
-  value: T;
-  required: boolean;
-  isValid: boolean;
-  type: string;
 }
 
 export interface CourseModel {

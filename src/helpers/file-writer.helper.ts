@@ -218,7 +218,7 @@ class JsonWriter {
         writer.on('close', () => {
           subscriber.next({
             successful: true,
-            result: 'Course was added.',
+            result: 'Object was added.',
           });
           subscriber.complete();
         });
@@ -257,7 +257,7 @@ class JsonWriter {
         writer.on('close', () => {
           subscriber.next({
             successful: true,
-            result: 'Course was added.',
+            result: 'Object was added.',
           });
           subscriber.complete();
         });
