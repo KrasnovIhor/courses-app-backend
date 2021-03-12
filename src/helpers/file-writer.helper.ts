@@ -19,7 +19,7 @@ class JsonWriter {
     };
 
     return jsonReader
-      .getLastCharachterPosition(path)
+      .getLastCharacterPosition(path)
       .pipe(
         switchMap((result: Position) =>
           this._addObject<T>(path, dataWithIDs, result),
@@ -118,7 +118,7 @@ class JsonWriter {
       }),
       tap((objectInfo: ObjectInfo<T>) => this.writeToFile(objectInfo, writer)),
       tap(({ parsedJsonObject }: ObjectInfo<T>) => {
-        if (!objectFound) {
+        if (parsedJsonObject && !objectFound) {
           objectFound = parsedJsonObject.id === id;
         }
       }),
@@ -208,7 +208,7 @@ class JsonWriter {
     return new Observable(
       (subscriber: Subscriber<SuccessfulRequest<string> | FailedRequest>) => {
         const writer = fs.createWriteStream(path, {
-          flags: 'a+',
+          flags: 'r+',
           start: position ?? 0,
         });
         const dataAsStringifyArray = `${successful ? ',' : '['}${JSON.stringify(

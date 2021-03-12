@@ -65,7 +65,7 @@ export class CoursesController {
     @Param('id') id: string,
     @Body() body: CourseModel,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
-    return this.coursesService.editCourse(id, body);
+    return this.coursesService.editCourse(body, id);
   }
 
   @Delete(':id')

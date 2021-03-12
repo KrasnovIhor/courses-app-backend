@@ -27,7 +27,10 @@ export function ModelValidation<T, P extends { errorStates: string[] }>(Model: {
 
     const originalMethod = descriptor.value;
 
-    descriptor.value = function (data: T): any {
+    /**
+     * The first argument of this function must be a model, that is going to be validated.
+     */
+    descriptor.value = function (data: T, ...rest: any[]): any {
       const validatedData = new Model(data);
       const errors = validatedData.errorStates;
 
@@ -38,7 +41,11 @@ export function ModelValidation<T, P extends { errorStates: string[] }>(Model: {
         );
       }
 
-      return originalMethod.call(this, getValuesFromModel<P, T>(validatedData));
+      return originalMethod.call(
+        this,
+        getValuesFromModel<P, T>(validatedData),
+        ...rest,
+      );
     };
   };
 }

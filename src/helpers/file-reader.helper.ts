@@ -265,7 +265,7 @@ class JsonReader {
     );
   }
 
-  getLastCharachterPosition(
+  getLastCharacterPosition(
     path: string,
   ): Observable<Position | FailedRequest> {
     return new Observable(
@@ -283,11 +283,11 @@ class JsonReader {
 
           reader.close();
 
-          const lastCharchter = position - 1;
+          const lastCharcter = position - 1;
 
           subscriber.next({
             successful: true,
-            position: lastCharchter > 0 ? lastCharchter : 0,
+            position: lastCharcter > 0 ? lastCharcter : 0,
           });
           subscriber.complete();
         });

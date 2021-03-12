@@ -53,8 +53,6 @@ export class TokenService {
       user: null,
     } as TokenVerificationResult<T>;
 
-    console.log(this.tokens.get(base64Signature));
-
     if (!this.tokens.has(base64Signature)) {
       result.error = {
         message: 'Invalid token.',
@@ -69,8 +67,6 @@ export class TokenService {
       base64Signature,
     );
     const timePassed = Date.now() - creationDate;
-
-    console.log(timePassed, this.tokenTimeLiving);
 
     if (timePassed >= this.tokenTimeLiving) {
       this.destroy(base64Signature);
@@ -93,8 +89,6 @@ export class TokenService {
       },
       signature,
     );
-
-    console.log(isVerified);
 
     if (isVerified) {
       result.user = JSON.parse(stringifiedData);
