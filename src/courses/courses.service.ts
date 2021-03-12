@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import * as path from 'path';
 import { Observable, of } from 'rxjs';
@@ -14,11 +14,15 @@ import { ModelValidation } from '@helpers/decorators';
 import { jsonReader } from '@helpers/file-reader.helper';
 import { jsonWriter } from '@helpers/file-writer.helper';
 
+import { FILES_FOLDER } from '@core/core-module.config';
+
 import { Course, CourseModel } from './courses.models';
 
 @Injectable()
 export class CoursesService {
-  private readonly filePath = path.join(__dirname, 'courses.json');
+  private readonly filePath = path.join(this.filesFolder, 'courses.json');
+
+  constructor(@Inject(FILES_FOLDER) private filesFolder: string) {}
 
   getAllCourses(): Observable<
     SuccessfulRequest<CourseModel[] | string> | FailedRequest
@@ -102,8 +106,8 @@ export class CoursesService {
 
   @ModelValidation<CourseModel, Course>(Course)
   editCourse(
-    id: string,
     course: CourseModel,
+    id: string,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
     return jsonWriter.editObject<CourseModel>(this.filePath, course, id).pipe(
       catchError((err: FailedRequest) => {

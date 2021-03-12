@@ -27,7 +27,6 @@ export class AuthController {
   login(
     @Body() body: UserModel,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
-    console.log(body);
     return this.authService.login(body);
   }
 
@@ -43,7 +42,6 @@ export class AuthController {
   logout(
     @Headers('authorization') token: string,
   ): Observable<void | FailedRequest> {
-    console.log(token);
     return this.authService.logout(token);
   }
 }
