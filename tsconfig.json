@@ -6,15 +6,18 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "src",
+    "baseUrl": "./",
     "incremental": true,
     "paths" : {
-      "@helpers/*": ["helpers/*"],
-      "@models/*": ["models/*"],
-      "@core/*": ["core/*"]
+      "@helpers/*": ["src/helpers/*"],
+      "@models/*": ["src/models/*"],
+      "@core/*": ["src/core/*"],
+      "@auth/*": ["src/auth/*"],
+      "@swagger/*": ["swagger/*"]
     }
   }
 }

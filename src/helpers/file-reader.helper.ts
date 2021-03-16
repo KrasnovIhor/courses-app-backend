@@ -191,7 +191,7 @@ class JsonReader {
             return {
               ...acc,
               [key]: {
-                value,
+                value: decodeURIComponent(value),
                 isStrictEquality:
                   !isStrictEquality || isStrictEquality === 'true',
               },
@@ -233,7 +233,7 @@ class JsonReader {
               const jsonObjectValue = parsedJsonObject[key];
 
               if (isStrictEquality || typeof jsonObjectValue !== 'string') {
-                return value !== jsonObjectValue;
+                return value != jsonObjectValue;
               }
 
               return !jsonObjectValue.includes(value);
@@ -265,9 +265,7 @@ class JsonReader {
     );
   }
 
-  getLastCharacterPosition(
-    path: string,
-  ): Observable<Position | FailedRequest> {
+  getLastCharacterPosition(path: string): Observable<Position | FailedRequest> {
     return new Observable(
       (subscriber: Subscriber<Position | FailedRequest>) => {
         const reader = fs.createReadStream(path, {

@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBasicAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { Observable } from 'rxjs';
 
@@ -21,11 +22,14 @@ import {
 import { Authorized } from '@helpers/decorators';
 
 import { AuthorizationGuard } from '@core/authorization.guard';
+import { METADATA_AUTHORIZED_KEY } from '@core/core-module.config';
+import { SwaggerCourse } from '@swagger/models';
 
 import { CourseModel } from './courses.models';
 import { CoursesService } from './courses.service';
 
 @Controller('courses')
+@ApiTags('Courses')
 @UseGuards(AuthorizationGuard)
 export class CoursesController {
   constructor(private coursesService: CoursesService) {}
@@ -38,6 +42,41 @@ export class CoursesController {
   }
 
   @Get('filter')
+  @ApiQuery({
+    name: 'title',
+    required: false,
+    type: String,
+    isArray: true,
+    explode: false,
+  })
+  @ApiQuery({
+    name: 'description',
+    required: false,
+    type: String,
+    isArray: true,
+    explode: false,
+  })
+  @ApiQuery({
+    name: 'creationDate',
+    required: false,
+    type: String,
+    isArray: true,
+    explode: false,
+  })
+  @ApiQuery({
+    name: 'creationDate',
+    required: false,
+    type: String,
+    isArray: true,
+    explode: false,
+  })
+  @ApiQuery({
+    name: 'duration',
+    required: false,
+    type: String,
+    isArray: true,
+    explode: false,
+  })
   getFilteredCourses(
     @Query() queries: QueryParams = {},
   ): Observable<SuccessfulRequest<CourseModel[] | string> | FailedRequest> {
@@ -45,10 +84,15 @@ export class CoursesController {
   }
 
   @Post('add')
+  @ApiBody({
+    type: SwaggerCourse,
+  })
+  @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
   addCourse(
     @Body() body: CourseModel,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
+    console.log(body);
     return this.coursesService.addCourse(body);
   }
 
@@ -60,6 +104,10 @@ export class CoursesController {
   }
 
   @Put(':id')
+  @ApiBody({
+    type: SwaggerCourse,
+  })
+  @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
   editCourse(
     @Param('id') id: string,
@@ -69,6 +117,7 @@ export class CoursesController {
   }
 
   @Delete(':id')
+  @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
   deleteCourse(
     @Param('id') id: string,

@@ -7,10 +7,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { UserModel } from 'auth/auth.models';
 import { Observable, Subscriber } from 'rxjs';
 
+import { UserModel } from '@auth/auth.models';
+
 import { METADATA_AUTHORIZED_KEY } from './core-module.config';
+import { getTokenWithoutBearer } from './token.helpers';
 import { TokenVerificationResult } from './token.models';
 import { TokenService } from './token.service';
 
@@ -35,13 +37,15 @@ export class AuthorizationGuard implements CanActivate {
       headers: { authorization },
     } = context.switchToHttp().getRequest();
 
-    if (!authorization) {
+    if (!authorization || !authorization.startsWith('Bearer')) {
       return false;
     }
 
     return new Observable((subscriber: Subscriber<boolean>) => {
+      const authorizationWithoutBearer = getTokenWithoutBearer(authorization);
+
       this.tokenService.verify(
-        authorization,
+        authorizationWithoutBearer,
         (result: TokenVerificationResult<UserModel>) => {
           if (result.error) {
             throw new HttpException(
