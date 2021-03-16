@@ -12,7 +12,7 @@ import { CoursesModule } from './courses/courses.module';
     CoreModule.forRoot({
       algorithm: 'sha256',
       timeLiving: 600,
-      filesFolder: path.join(__dirname, '..', 'bd'),
+      filesFolder: path.join(__dirname, '..', '..', 'bd'),
     }),
     AuthModule,
     CoursesModule,

@@ -15,6 +15,7 @@ import { jsonReader } from '@helpers/file-reader.helper';
 import { jsonWriter } from '@helpers/file-writer.helper';
 
 import { FILES_FOLDER } from '@core/core-module.config';
+import { getTokenWithoutBearer } from '@core/token.helpers';
 import { TokenService } from '@core/token.service';
 
 import { User, UserModel } from './auth.models';
@@ -91,7 +92,8 @@ export class AuthService {
     );
   }
 
-  logout(token: string): Observable<void> {
+  logout(tokenWithBearer: string): Observable<void> {
+    const token = getTokenWithoutBearer(tokenWithBearer);
     this.tokenService.destroy(token);
 
     return of(null);
