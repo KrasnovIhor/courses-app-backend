@@ -15,6 +15,7 @@ import { Observable } from 'rxjs';
 
 import {
   FailedRequest,
+  ItemModel,
   QueryParams,
   SuccessfulRequest,
 } from '@models/common.models';
@@ -36,7 +37,7 @@ export class CoursesController {
 
   @Get('all')
   getAllCourses(): Observable<
-    SuccessfulRequest<CourseModel[] | string> | FailedRequest
+    SuccessfulRequest<ItemModel[] | string> | FailedRequest
   > {
     return this.coursesService.getAllCourses();
   }
@@ -99,7 +100,7 @@ export class CoursesController {
   @Get(':id')
   getSingelCourse(
     @Param('id') id: string,
-  ): Observable<SuccessfulRequest<CourseModel | string> | FailedRequest> {
+  ): Observable<SuccessfulRequest<ItemModel | string> | FailedRequest> {
     return this.coursesService.getCourse(id);
   }
 
