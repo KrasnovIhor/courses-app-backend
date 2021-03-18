@@ -1,3 +1,6 @@
+import { AuthorModel } from '../authors/authors.models';
+import { CourseModel } from '../courses/courses.models';
+
 export interface QueryParams {
   [key: string]: string;
 }
@@ -19,3 +22,5 @@ export interface ValueWithRequiredState<T> {
   isValid: boolean;
   type: string;
 }
+
+export type ItemModel = CourseModel | AuthorModel;
