@@ -64,7 +64,11 @@ export class CoursesService {
 
   @ModelValidation<CourseModel, Course>(Course)
   addCourse(course: CourseModel) {
-    return addItem(course, this.filePath);
+    const courseWithCreationDate = {
+      ...course,
+      creationDate: new Date().toLocaleDateString('en-GB'),
+    };
+    return addItem(courseWithCreationDate, this.filePath);
   }
 
   @ModelValidation<CourseModel, Course>(Course)

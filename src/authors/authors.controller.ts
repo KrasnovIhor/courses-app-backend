@@ -8,6 +8,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBasicAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 
 import { Observable } from 'rxjs';
 
@@ -20,11 +21,14 @@ import {
 import { Authorized } from '@helpers/decorators';
 
 import { AuthorizationGuard } from '@core/authorization.guard';
+import { METADATA_AUTHORIZED_KEY } from '@core/core-module.config';
+import { SwaggerAuthor } from '@swagger/models';
 
 import { AuthorModel } from './authors.models';
 import { AuthorsService } from './authors.service';
 
 @Controller('authors')
+@ApiTags('Authors')
 @UseGuards(AuthorizationGuard)
 export class AuthorsController {
   constructor(private authorsService: AuthorsService) {}
@@ -37,6 +41,10 @@ export class AuthorsController {
   }
 
   @Post('add')
+  @ApiBody({
+    type: SwaggerAuthor,
+  })
+  @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
   addAuthor(
     @Body() body: AuthorModel,
@@ -52,6 +60,10 @@ export class AuthorsController {
   }
 
   @Put(':id')
+  @ApiBody({
+    type: SwaggerAuthor,
+  })
+  @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
   editAuthor(
     @Param('id') id: string,
@@ -61,6 +73,7 @@ export class AuthorsController {
   }
 
   @Delete(':id')
+  @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
   deleteAuthor(
     @Param('id') id: string,

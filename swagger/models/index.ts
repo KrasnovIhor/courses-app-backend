@@ -8,9 +8,6 @@ export class SwaggerCourse {
   description: string;
 
   @ApiProperty()
-  creationDate: string;
-
-  @ApiProperty()
   duration: number;
 
   @ApiProperty()
@@ -26,4 +23,9 @@ export class SwaggerUser {
 
   @ApiProperty()
   password: string;
+}
+
+export class SwaggerAuthor {
+  @ApiProperty()
+  name: string;
 }
