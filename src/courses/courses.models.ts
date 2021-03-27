@@ -10,14 +10,12 @@ import {
 export class Course implements CourseModelWithRequiredState {
   title: ValueWithRequiredState<string>;
   description: ValueWithRequiredState<string>;
-  creationDate: ValueWithRequiredState<string>;
   duration: ValueWithRequiredState<number>;
   authors: ValueWithRequiredState<string[]>;
 
   constructor({
     title = null,
     description = null,
-    creationDate = null,
     duration = null,
     authors = null,
   }: CourseModel) {
@@ -31,12 +29,6 @@ export class Course implements CourseModelWithRequiredState {
       value: description,
       required: true,
       isValid: description && isString(description),
-      type: 'string',
-    };
-    this.creationDate = {
-      value: creationDate,
-      required: true,
-      isValid: creationDate && isString(creationDate),
       type: 'string',
     };
     this.duration = {
@@ -61,7 +53,6 @@ export class Course implements CourseModelWithRequiredState {
 interface CourseModelWithRequiredState {
   title: ValueWithRequiredState<string>;
   description: ValueWithRequiredState<string>;
-  creationDate: ValueWithRequiredState<string>;
   duration: ValueWithRequiredState<number>;
   authors: ValueWithRequiredState<string[]>;
 }

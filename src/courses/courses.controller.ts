@@ -93,7 +93,6 @@ export class CoursesController {
   addCourse(
     @Body() body: CourseModel,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
-    console.log(body);
     return this.coursesService.addCourse(body);
   }
 
