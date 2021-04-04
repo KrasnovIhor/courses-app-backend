@@ -33,9 +33,10 @@ export class AuthorizationGuard implements CanActivate {
       return true;
     }
 
+    const request = context.switchToHttp().getRequest();
     const {
       headers: { authorization },
-    } = context.switchToHttp().getRequest();
+    } = request;
 
     if (!authorization || !authorization.startsWith('Bearer')) {
       return false;
@@ -53,6 +54,8 @@ export class AuthorizationGuard implements CanActivate {
               HttpStatus.UNAUTHORIZED,
             );
           }
+
+          request.user = result.user;
 
           subscriber.next(true);
           subscriber.complete();

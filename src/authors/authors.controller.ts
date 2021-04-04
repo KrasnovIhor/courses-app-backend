@@ -18,10 +18,11 @@ import {
   SuccessfulRequest,
 } from '@models/common.models';
 
-import { Authorized } from '@helpers/decorators';
+import { Authorized, Roles } from '@helpers/decorators';
 
 import { AuthorizationGuard } from '@core/authorization.guard';
-import { METADATA_AUTHORIZED_KEY } from '@core/core-module.config';
+import { METADATA_AUTHORIZED_KEY, UserRoles } from '@core/core-module.config';
+import { RoleGuard } from '@core/role.guard';
 import { SwaggerAuthor } from '@swagger/models';
 
 import { AuthorModel } from './authors.models';
@@ -29,7 +30,7 @@ import { AuthorsService } from './authors.service';
 
 @Controller('authors')
 @ApiTags('Authors')
-@UseGuards(AuthorizationGuard)
+@UseGuards(AuthorizationGuard, RoleGuard)
 export class AuthorsController {
   constructor(private authorsService: AuthorsService) {}
 
@@ -46,9 +47,10 @@ export class AuthorsController {
   })
   @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
+  @Roles(UserRoles.admin)
   addAuthor(
     @Body() body: AuthorModel,
-  ): Observable<SuccessfulRequest<string> | FailedRequest> {
+  ): Observable<SuccessfulRequest<string | ItemModel> | FailedRequest> {
     return this.authorsService.addAuthor(body);
   }
 
@@ -65,6 +67,7 @@ export class AuthorsController {
   })
   @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
+  @Roles(UserRoles.admin)
   editAuthor(
     @Param('id') id: string,
     @Body() body: AuthorModel,
@@ -75,6 +78,7 @@ export class AuthorsController {
   @Delete(':id')
   @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
+  @Roles(UserRoles.admin)
   deleteAuthor(
     @Param('id') id: string,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {

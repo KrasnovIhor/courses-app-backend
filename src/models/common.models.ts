@@ -19,7 +19,7 @@ export interface FailedRequest {
 export interface ValueWithRequiredState<T> {
   value: T;
   required: boolean;
-  isValid: boolean;
+  isValid: (...args: any[]) => boolean | Promise<boolean>;
   type: string;
 }
 

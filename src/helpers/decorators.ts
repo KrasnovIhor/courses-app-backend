@@ -5,7 +5,10 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 
-import { METADATA_AUTHORIZED_KEY } from '@core/core-module.config';
+import {
+  METADATA_AUTHORIZED_KEY,
+  METADATA_ROLE_KEY,
+} from '@core/core-module.config';
 
 import { getValuesFromModel } from './common.helpers';
 
@@ -13,9 +16,23 @@ export function Authorized(): CustomDecorator {
   return SetMetadata(METADATA_AUTHORIZED_KEY, true);
 }
 
-export function ModelValidation<T, P extends { errorStates: string[] }>(Model: {
-  new (model: T): P;
-}): MethodDecorator {
+export function Roles(...roles: string[]): CustomDecorator {
+  return SetMetadata(METADATA_ROLE_KEY, roles);
+}
+
+export function ModelValidation<
+  T,
+  P extends { errorStates: Promise<string[]> }
+>(
+  Model: {
+    new (
+      model: T,
+      requiredFields: { [key: string]: boolean },
+      filePath?: string,
+    ): P;
+  },
+  requiredState?: { [key: string]: boolean },
+): MethodDecorator {
   return (
     target: any,
     propertyKey: string,
@@ -30,9 +47,9 @@ export function ModelValidation<T, P extends { errorStates: string[] }>(Model: {
     /**
      * The first argument of this function must be a model, that is going to be validated.
      */
-    descriptor.value = function (data: T, ...rest: any[]): any {
-      const validatedData = new Model(data);
-      const errors = validatedData.errorStates;
+    descriptor.value = async function (data: T, ...rest: any[]): Promise<any> {
+      const validatedData = new Model(data, requiredState);
+      const errors = await validatedData.errorStates;
 
       if (errors.length) {
         throw new HttpException(

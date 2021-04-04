@@ -1,8 +1,4 @@
-import {
-  isArrayContainsOnlyString,
-  isNumber,
-  isString,
-} from './common.helpers';
+import { isNumber, isString } from './common.helpers';
 
 describe('common helpers', () => {
   describe('isString', () => {
@@ -24,16 +20,6 @@ describe('common helpers', () => {
       expect(isNumber(undefined)).toBeFalsy();
       expect(isNumber({})).toBeFalsy();
       expect(isNumber([])).toBeFalsy();
-    });
-  });
-
-  describe('isArrayContainsOnlyString', () => {
-    it('should return true, if array contains only strings', () => {
-      expect(isArrayContainsOnlyString(['test', 'test1'])).toBeTruthy();
-    });
-
-    it('should return false, if array contains not only strings', () => {
-      expect(isArrayContainsOnlyString(['test', 2])).toBeFalsy();
     });
   });
 });
