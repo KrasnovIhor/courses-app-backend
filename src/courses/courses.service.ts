@@ -11,6 +11,8 @@ import {
   SuccessfulRequest,
 } from '@models/common.models';
 
+import { ModelValidation } from '@helpers/decorators';
+import { jsonReader } from '@helpers/file-reader.helper';
 import {
   addItem,
   deleteItem,
@@ -18,8 +20,6 @@ import {
   getAllItems,
   getItem,
 } from '@helpers/items.helpers';
-import { ModelValidation } from '@helpers/decorators';
-import { jsonReader } from '@helpers/file-reader.helper';
 
 import { FILES_FOLDER } from '@core/core-module.config';
 
@@ -71,7 +71,12 @@ export class CoursesService {
     return addItem(courseWithCreationDate, this.filePath);
   }
 
-  @ModelValidation<CourseModel, Course>(Course)
+  @ModelValidation<CourseModel, Course>(Course, {
+    titleRequired: false,
+    descriptionRequired: false,
+    durationRequired: false,
+    authorsRequired: false,
+  })
   editCourse(
     course: CourseModel,
     id: string,

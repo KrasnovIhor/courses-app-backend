@@ -9,6 +9,7 @@ import {
   SuccessfulRequest,
 } from '@models/common.models';
 
+import { ModelValidation } from '@helpers/decorators';
 import {
   addItem,
   deleteItem,
@@ -16,7 +17,6 @@ import {
   getAllItems,
   getItem,
 } from '@helpers/items.helpers';
-import { ModelValidation } from '@helpers/decorators';
 
 import { FILES_FOLDER } from '@core/core-module.config';
 
@@ -43,7 +43,7 @@ export class AuthorsService {
   @ModelValidation<AuthorModel, Author>(Author)
   addAuthor(
     author: AuthorModel,
-  ): Observable<SuccessfulRequest<string> | FailedRequest> {
+  ): Observable<SuccessfulRequest<string | ItemModel> | FailedRequest> {
     return addItem(author, this.filePath);
   }
 

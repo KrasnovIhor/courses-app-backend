@@ -6,6 +6,7 @@ export interface UserModel {
   name: string;
   email: string;
   password: string;
+  role: string;
 }
 
 export class User implements UserModelWithRequiredState {
@@ -13,28 +14,35 @@ export class User implements UserModelWithRequiredState {
   email: ValueWithRequiredState<string>;
   password: ValueWithRequiredState<string>;
 
-  constructor({ name = null, email = null, password = null }: UserModel) {
+  constructor(
+    { name = null, email = null, password = null }: UserModel,
+    {
+      nameRequired = false,
+      emailRequired = true,
+      passwordRequired = true,
+    }: { [key: string]: boolean } = {},
+  ) {
     this.name = {
       value: name,
-      required: false,
-      isValid: name && isString(name),
+      required: nameRequired,
+      isValid: (name: string) => name && isString(name),
       type: 'string',
     };
     this.email = {
       value: email,
-      required: true,
-      isValid: email && isString(email),
+      required: emailRequired,
+      isValid: (email: string) => email && isString(email),
       type: 'string',
     };
     this.password = {
       value: password,
-      required: true,
-      isValid: password && isString(password),
+      required: passwordRequired,
+      isValid: (password: string) => password && isString(password),
       type: 'string',
     };
   }
 
-  get errorStates(): string[] {
+  get errorStates(): Promise<string[]> {
     return getValidityStateOfModel(this);
   }
 }

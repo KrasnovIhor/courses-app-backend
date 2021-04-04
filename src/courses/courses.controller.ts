@@ -20,10 +20,11 @@ import {
   SuccessfulRequest,
 } from '@models/common.models';
 
-import { Authorized } from '@helpers/decorators';
+import { Authorized, Roles } from '@helpers/decorators';
 
 import { AuthorizationGuard } from '@core/authorization.guard';
-import { METADATA_AUTHORIZED_KEY } from '@core/core-module.config';
+import { METADATA_AUTHORIZED_KEY, UserRoles } from '@core/core-module.config';
+import { RoleGuard } from '@core/role.guard';
 import { SwaggerCourse } from '@swagger/models';
 
 import { CourseModel } from './courses.models';
@@ -31,7 +32,7 @@ import { CoursesService } from './courses.service';
 
 @Controller('courses')
 @ApiTags('Courses')
-@UseGuards(AuthorizationGuard)
+@UseGuards(AuthorizationGuard, RoleGuard)
 export class CoursesController {
   constructor(private coursesService: CoursesService) {}
 
@@ -90,9 +91,10 @@ export class CoursesController {
   })
   @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
+  @Roles(UserRoles.admin)
   addCourse(
     @Body() body: CourseModel,
-  ): Observable<SuccessfulRequest<string> | FailedRequest> {
+  ): Observable<SuccessfulRequest<string | ItemModel> | FailedRequest> {
     return this.coursesService.addCourse(body);
   }
 
@@ -109,6 +111,7 @@ export class CoursesController {
   })
   @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
+  @Roles(UserRoles.admin)
   editCourse(
     @Param('id') id: string,
     @Body() body: CourseModel,
@@ -119,6 +122,7 @@ export class CoursesController {
   @Delete(':id')
   @ApiBasicAuth(METADATA_AUTHORIZED_KEY)
   @Authorized()
+  @Roles(UserRoles.admin)
   deleteCourse(
     @Param('id') id: string,
   ): Observable<SuccessfulRequest<string> | FailedRequest> {

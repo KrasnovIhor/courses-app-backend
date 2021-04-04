@@ -1,4 +1,8 @@
+import * as path from 'path';
+
 import { ValueWithRequiredState } from '@models/common.models';
+
+export const bdMainPath = path.join(__dirname, '..', '..', '..', 'bd');
 
 export function isString(value: any): boolean {
   return typeof value === 'string';
@@ -8,13 +12,13 @@ export function isNumber(value: any): boolean {
   return typeof value === 'number';
 }
 
-export function isArrayContainsOnlyString(array: any[]): boolean {
-  return array.every(isString);
-}
-
 export function getValuesFromModel<T, P>(model: T): P {
   return Object.entries(model).reduce(
     (acc: P, [key, { value }]: [string, ValueWithRequiredState<any>]) => {
+      if (!value) {
+        return acc;
+      }
+
       return {
         ...acc,
         [key]: value,
@@ -24,18 +28,32 @@ export function getValuesFromModel<T, P>(model: T): P {
   );
 }
 
-export function getValidityStateOfModel<T>(self: T): string[] {
-  return Object.keys(self).reduce((acc: string[], key: string) => {
-    const classProperty = self[key] as ValueWithRequiredState<any>;
+export async function getValidityStateOfModel<T>(self: T): Promise<string[]> {
+  const promises = Object.keys(self).map((key: string) =>
+    Promise.resolve(key)
+      .then((key: string) => {
+        const classProperty = self[key] as ValueWithRequiredState<any>;
 
-    if (classProperty.required && !classProperty.value) {
-      return [...acc, `'${key}' was missed.`];
-    }
+        if (classProperty.required && !classProperty.value) {
+          return `'${key}' was missed.`;
+        }
 
-    if (classProperty.value && !classProperty.isValid) {
-      return [...acc, `'${key}' should be a ${classProperty.type}`];
-    }
+        return (
+          classProperty.value && classProperty.isValid(classProperty.value)
+        );
+      })
+      .then((result: boolean | string) => {
+        if (typeof result !== 'boolean') {
+          return result;
+        }
 
-    return acc;
-  }, [] as string[]);
+        const classProperty = self[key] as ValueWithRequiredState<any>;
+
+        return result ? null : `'${key}' should be a ${classProperty.type}`;
+      }),
+  );
+
+  return Promise.all(promises).then((keys: string[]) => {
+    return keys.filter(Boolean);
+  });
 }

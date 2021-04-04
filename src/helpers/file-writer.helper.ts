@@ -12,19 +12,22 @@ class JsonWriter {
   addObject<T>(
     path: string,
     data: T,
-  ): Observable<SuccessfulRequest<string> | FailedRequest> {
+  ): Observable<SuccessfulRequest<string | T> | FailedRequest> {
     const dataWithIDs = {
       ...data,
       id: v4(),
     };
 
-    return jsonReader
-      .getLastCharacterPosition(path)
-      .pipe(
-        switchMap((result: Position) =>
-          this._addObject<T>(path, dataWithIDs, result),
-        ),
-      );
+    return jsonReader.getLastCharacterPosition(path).pipe(
+      switchMap((result: Position) =>
+        this._addObject<T>(path, dataWithIDs, result),
+      ),
+      map((result: SuccessfulRequest<string>) => {
+        return result.successful
+          ? ({ successful: true, result: dataWithIDs } as SuccessfulRequest<T>)
+          : result;
+      }),
+    );
   }
 
   deleteObject<T extends { id: string }>(
@@ -98,7 +101,7 @@ class JsonWriter {
   ): Observable<SuccessfulRequest<string> | FailedRequest> {
     const tempFilePath = `${v4()}-temp.json`;
     let writer: fs.WriteStream;
-    let objectFound = false;
+    let objectFound = null;
 
     return this.renameFile(path, tempFilePath).pipe(
       tap(() => (writer = fs.createWriteStream(path, { flags: 'a+' }))),
@@ -118,8 +121,8 @@ class JsonWriter {
       }),
       tap((objectInfo: ObjectInfo<T>) => this.writeToFile(objectInfo, writer)),
       tap(({ parsedJsonObject }: ObjectInfo<T>) => {
-        if (parsedJsonObject && !objectFound) {
-          objectFound = parsedJsonObject.id === id;
+        if (!objectFound && parsedJsonObject && parsedJsonObject.id === id) {
+          objectFound = parsedJsonObject;
         }
       }),
       filter(({ finished }: ObjectInfo<T>) => finished),
@@ -128,9 +131,9 @@ class JsonWriter {
       map(
         () =>
           ({
-            successful: objectFound,
+            successful: !!objectFound,
             result: objectFound
-              ? `Object with id - ${id} was edited.`
+              ? objectFound
               : `Object with id - ${id} was not found.`,
           } as SuccessfulRequest<string>),
       ),
@@ -243,21 +246,23 @@ class JsonWriter {
   createJSON<T>(
     path: string,
     data: T,
-  ): Observable<SuccessfulRequest<string> | FailedRequest> {
+  ): Observable<SuccessfulRequest<string | T> | FailedRequest> {
     const dataWithId = {
       ...data,
       id: v4(),
     };
 
     return new Observable(
-      (subscriber: Subscriber<SuccessfulRequest<string> | FailedRequest>) => {
+      (
+        subscriber: Subscriber<SuccessfulRequest<string | T> | FailedRequest>,
+      ) => {
         const writer = fs.createWriteStream(path, { flags: 'w' });
         const dataAsStringifyArray = `[${JSON.stringify(dataWithId)}]`;
 
         writer.on('close', () => {
           subscriber.next({
             successful: true,
-            result: 'Object was added.',
+            result: dataWithId,
           });
           subscriber.complete();
         });

@@ -1,5 +1,7 @@
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { HttpException, HttpStatus } from '@nestjs/common';
+
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 import {
   FailedRequest,
@@ -34,15 +36,23 @@ export function getItem(
   return jsonReader
     .getSingleObject<ItemModel>(filePath, { id })
     .pipe(
+      tap(({ result }: SuccessfulRequest<ItemModel | string>) => {
+        if (!result) {
+          throw new HttpException(
+            { successful: false, result: `Item with id - ${id} was not found` },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      }),
       catchError((err: FailedRequest) => {
         if (err.message === 'Error during file reading.') {
-          return of({
-            successful: true,
-            result: `Item with id - ${id} was not found`,
-          } as SuccessfulRequest<string>);
+          throw new HttpException(
+            { successful: false, result: `Item with id - ${id} was not found` },
+            HttpStatus.NOT_FOUND,
+          );
         }
 
-        return of(err);
+        return throwError(err);
       }),
     );
 }
@@ -50,21 +60,13 @@ export function getItem(
 export function addItem(
   item: ItemModel,
   filePath: string,
-): Observable<SuccessfulRequest<string> | FailedRequest> {
+): Observable<SuccessfulRequest<string | ItemModel> | FailedRequest> {
   return jsonWriter.addObject<ItemModel>(filePath, item).pipe(
-    map((result: SuccessfulRequest<string>) => ({
-      ...result,
-      result: `Item was added.`,
-    })),
     catchError((err: FailedRequest) => {
       if (err.message === 'Error during file reading.') {
-        return jsonWriter.createJSON<ItemModel>(filePath, item).pipe(
-          map((result: SuccessfulRequest<string>) => ({
-            ...result,
-            result: 'Item was added.',
-          })),
-          catchError((err: FailedRequest) => of(err)),
-        );
+        return jsonWriter
+          .createJSON<ItemModel>(filePath, item)
+          .pipe(catchError((err: FailedRequest) => of(err)));
       }
 
       return of(err);
@@ -80,10 +82,10 @@ export function editItem(
   return jsonWriter.editObject<ItemModel>(filePath, item, id).pipe(
     catchError((err: FailedRequest) => {
       if (err.message === 'Error during renaming.') {
-        return of({
-          successful: true,
-          result: `Item with id - ${id} was not found.`,
-        } as SuccessfulRequest<string>);
+        throw new HttpException(
+          { successful: false, result: `Item with id - ${id} was not found` },
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       return of(err);
@@ -98,13 +100,20 @@ export function deleteItem(
   return jsonWriter.deleteObject<ItemModel>(filePath, id).pipe(
     catchError((err: FailedRequest) => {
       if (err.message === 'Error during renaming.') {
-        return of({
-          successful: true,
-          result: `Item with id - ${id} was not found.`,
-        } as SuccessfulRequest<string>);
+        throw new HttpException(
+          { successful: false, result: `Item with id - ${id} was not found` },
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       return of(err);
     }),
   );
+}
+
+export function areAllItemsExist(
+  ids: string[],
+  filePath: string,
+): Promise<boolean> {
+  return jsonReader.areAllIdsExist(ids, filePath).toPromise();
 }

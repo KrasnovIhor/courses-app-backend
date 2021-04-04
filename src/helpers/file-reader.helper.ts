@@ -44,6 +44,65 @@ class JsonReader {
     );
   }
 
+  areAllIdsExist(ids: string[], path: string): Observable<boolean> {
+    return new Observable((subscriber: Subscriber<boolean>) => {
+      const reader = fs.createReadStream(path, {
+        encoding: 'utf8',
+      });
+
+      reader.on('readable', function () {
+        let chunks = '';
+        let chunk: string;
+        let openedBraces = 0;
+        const foundIds = [];
+        let allExist = false;
+
+        while (null !== (chunk = reader.read(1))) {
+          if (chunk === '{') {
+            openedBraces++;
+          }
+
+          if (!chunks && openedBraces === 0) {
+            continue;
+          }
+
+          if (chunk === '}') {
+            openedBraces--;
+          }
+
+          chunks += chunk;
+
+          if (openedBraces !== 0) {
+            continue;
+          }
+
+          const parsedJsonObject = JSON.parse(chunks);
+          const id = ids.find((id: string) => parsedJsonObject.id === id);
+
+          chunks = '';
+
+          if (id) {
+            foundIds.push(id);
+          }
+
+          if (foundIds.length === ids.length) {
+            allExist = true;
+
+            break;
+          }
+        }
+
+        subscriber.next(allExist);
+        subscriber.complete();
+      });
+
+      reader.on('error', () => {
+        subscriber.next(false);
+        subscriber.complete();
+      });
+    });
+  }
+
   getObjectByObject<T>(
     path: string,
   ): Observable<ObjectInfo<T> | FailedRequest> {
