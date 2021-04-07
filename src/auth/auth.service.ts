@@ -45,7 +45,7 @@ export class AuthService {
 
             return {
               successful: true,
-              result: accessToken,
+              result: 'Bearer ' + accessToken,
               user: {
                 email: user.result.email,
                 name: user.result.name,
