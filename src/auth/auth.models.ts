@@ -31,14 +31,14 @@ export class User implements UserModelWithRequiredState {
     this.email = {
       value: email,
       required: emailRequired,
-      isValid: (email: string) => email && isString(email),
-      type: 'string',
+      isValid: (email: string) => email && isString(email) && /.+@[^@]+\.[^@]{2,}$/.test(email),
+      type: 'string and it should be an email',
     };
     this.password = {
       value: password,
       required: passwordRequired,
-      isValid: (password: string) => password && isString(password),
-      type: 'string',
+      isValid: (password: string) => password && isString(password) && (nameRequired ? password.length >= 6 : true),
+      type: `string${ nameRequired ? ' and length should be 6 characters minimum' : '' }`,
     };
   }
 
