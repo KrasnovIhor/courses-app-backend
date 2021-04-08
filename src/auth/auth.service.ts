@@ -59,7 +59,6 @@ export class AuthService {
           );
         }),
         catchError((err: FailedRequest) => {
-          console.log(err);
           if (err.message === 'Error during file reading.') {
             throw new HttpException(
               { successful: false, result: 'Invalid data.' },
