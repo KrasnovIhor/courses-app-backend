@@ -114,6 +114,13 @@ export function deleteItem(
 export function areAllItemsExist(
   ids: string[],
   filePath: string,
+  property: string,
+  reverse = false,
 ): Promise<boolean> {
-  return jsonReader.areAllIdsExist(ids, filePath).toPromise();
+  return jsonReader
+    .areAllItemsExistByProperty(ids, filePath, property)
+    .toPromise()
+    .then((allItemsExist: boolean) => {
+      return reverse ? !allItemsExist : allItemsExist;
+    });
 }
