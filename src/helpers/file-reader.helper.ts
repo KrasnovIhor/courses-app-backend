@@ -44,7 +44,11 @@ class JsonReader {
     );
   }
 
-  areAllIdsExist(ids: string[], path: string): Observable<boolean> {
+  areAllItemsExistByProperty(
+    items: string[],
+    path: string,
+    property: string,
+  ): Observable<boolean> {
     return new Observable((subscriber: Subscriber<boolean>) => {
       const reader = fs.createReadStream(path, {
         encoding: 'utf8',
@@ -54,7 +58,7 @@ class JsonReader {
         let chunks = '';
         let chunk: string;
         let openedBraces = 0;
-        const foundIds = [];
+        const foundItems = [];
         let allExist = false;
 
         while (null !== (chunk = reader.read(1))) {
@@ -77,15 +81,17 @@ class JsonReader {
           }
 
           const parsedJsonObject = JSON.parse(chunks);
-          const id = ids.find((id: string) => parsedJsonObject.id === id);
+          const item = items.find(
+            (item: string) => parsedJsonObject[property] === item,
+          );
 
           chunks = '';
 
-          if (id) {
-            foundIds.push(id);
+          if (item) {
+            foundItems.push(item);
           }
 
-          if (foundIds.length === ids.length) {
+          if (foundItems.length === items.length) {
             allExist = true;
 
             break;

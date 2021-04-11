@@ -53,7 +53,9 @@ export class Course implements CourseModelWithRequiredState {
       value: authors,
       required: authorsRequired,
       isValid: (authors: string[]) =>
-        authors && authors.length && areAllItemsExist(authors, this.filePath),
+        authors &&
+        authors.length &&
+        areAllItemsExist(authors, this.filePath, 'id'),
       type: 'string[] and those strings must be actual IDs.',
     };
   }
