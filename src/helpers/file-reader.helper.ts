@@ -339,14 +339,33 @@ class JsonReader {
 
         reader.on('readable', function () {
           let position = 0;
+          let letter: string;
+          let previous: string;
+          let countOfEmptyChars = 0;
 
-          while (null !== reader.read(1)) {
+          while (null !== letter) {
+            if (letter) {
+              previous = letter;
+            }
+
+            letter = reader.read(1);
+
+            if (letter === '\n' || letter === ' ') {
+              countOfEmptyChars++;
+              continue;
+            }
+
+            if ((previous === '\n' || previous === ' ') && letter) {
+              position += countOfEmptyChars;
+              countOfEmptyChars = 0;
+            }
+
             position++;
           }
 
           reader.close();
 
-          const lastCharcter = position - 1;
+          const lastCharcter = position - 2;
 
           subscriber.next({
             successful: true,
