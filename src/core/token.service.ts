@@ -7,8 +7,8 @@ import { TokenVerificationResult } from './token.models';
 
 interface Token {
   stringifiedData: string;
-  publicKey: crypto.KeyObject;
-  privateKey: crypto.KeyObject;
+  publicKey: string;
+  privateKey: string;
   creationDate: number;
 }
 
@@ -27,11 +27,35 @@ export class TokenService {
     const base64Data = Buffer.from(stringifiedData);
     const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
+      publicKeyEncoding: {
+        type: 'spki',
+        format: 'pem',
+      },
+      privateKeyEncoding: {
+        type: 'pkcs8',
+        format: 'pem',
+      },
     });
-    const signature = crypto.sign(this.tokenConfig.algorithm, base64Data, {
-      key: privateKey,
-      padding: this.padding,
-    });
+
+    let signature: Buffer;
+
+    /**
+     * That function is supported by Node.js <= 12.0.0
+     */
+    if (crypto.sign) {
+      signature = crypto.sign(this.tokenConfig.algorithm, base64Data, {
+        key: privateKey,
+        padding: this.padding,
+      });
+    } else {
+      const signer = crypto.createSign(this.tokenConfig.algorithm);
+
+      signer.update(base64Data);
+      signer.end();
+
+      signature = signer.sign(privateKey);
+    }
+
     const base64Signature = signature.toString('base64');
 
     this.tokens.set(base64Signature, {
@@ -80,15 +104,29 @@ export class TokenService {
       return;
     }
 
-    const isVerified = crypto.verify(
-      this.tokenConfig.algorithm,
-      Buffer.from(stringifiedData),
-      {
-        key: publicKey,
-        padding: this.padding,
-      },
-      signature,
-    );
+    let isVerified: boolean;
+
+    /**
+     * That function is supported by Node.js <= 12.0.0
+     */
+    if (crypto.verify) {
+      isVerified = crypto.verify(
+        this.tokenConfig.algorithm,
+        Buffer.from(stringifiedData),
+        {
+          key: publicKey,
+          padding: this.padding,
+        },
+        signature,
+      );
+    } else {
+      const verifier = crypto.createVerify(this.tokenConfig.algorithm);
+
+      verifier.update(Buffer.from(stringifiedData));
+      verifier.end();
+
+      isVerified = verifier.verify(publicKey, signature);
+    }
 
     if (isVerified) {
       result.user = JSON.parse(stringifiedData);
