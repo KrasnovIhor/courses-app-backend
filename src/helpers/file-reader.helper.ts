@@ -343,15 +343,20 @@ class JsonReader {
           let previous: string;
           let countOfEmptyChars = 0;
 
-          while (null !== letter) {
+          while (true) {
             if (letter) {
               previous = letter;
             }
 
             letter = reader.read(1);
 
+            if (letter === null) {
+              break;
+            }
+
             if (letter === '\n' || letter === ' ') {
-              countOfEmptyChars++;
+              countOfEmptyChars += Buffer.byteLength(letter, 'utf8');
+
               continue;
             }
 
@@ -360,12 +365,12 @@ class JsonReader {
               countOfEmptyChars = 0;
             }
 
-            position++;
+            position += Buffer.byteLength(letter, 'utf8');
           }
 
           reader.close();
 
-          const lastCharcter = position - 2;
+          const lastCharcter = position - 1;
 
           subscriber.next({
             successful: true,
