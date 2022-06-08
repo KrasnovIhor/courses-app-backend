@@ -51,7 +51,7 @@ $ npm run start
 
 ![Login](assets/img/login.png?raw=true "Login")
 
-2) Cope result token from the response (token after *Barier*)
+2) Copy result token from the response (token after *Barier*)
 
 ![Token](assets/img/token.png?raw=true "Token")
 
